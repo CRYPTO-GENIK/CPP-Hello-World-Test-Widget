@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Theme Test Widget</title>
+  <style>
+    :root {
+      /* Fallback colors */
+      --primary: #6366f1;
+      --secondary: #8b5cf6;
+      --accent: #f59e0b;
+      --surface: #1e293b;
+      --text: #f1f5f9;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: transparent;
+      color: var(--text);
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100px;
+      text-align: center;
+    }
+    .container {
+        background: var(--surface);
+        padding: 24px;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    h1 {
+        font-size: 1.5rem;
+        color: var(--primary);
+        margin-bottom: 24px;
+    }
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 16px;
+      width: 100%;
+      max-width: 600px;
+    }
+    .color-swatch {
+      height: 100px;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-weight: 500;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .color-swatch .name {
+        font-size: 1rem;
+    }
+    .color-swatch .hex {
+        font-size: 0.8rem;
+        opacity: 0.8;
+        margin-top: 4px;
+    }
+    .primary { background-color: var(--primary); color: #ffffff; }
+    .secondary { background-color: var(--secondary); color: #ffffff; }
+    .accent { background-color: var(--accent); color: #000000; }
+    .surface { background-color: var(--surface); color: var(--text); border: 1px solid var(--primary); }
+    .text { background-color: var(--text); color: var(--surface); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Theme Test Widget</h1>
+    <div class="color-grid">
+      <div class="color-swatch primary">
+        <span class="name">Primary</span>
+        <span class="hex" data-color-name="primary"></span>
+      </div>
+      <div class="color-swatch secondary">
+        <span class="name">Secondary</span>
+        <span class="hex" data-color-name="secondary"></span>
+      </div>
+      <div class="color-swatch accent">
+        <span class="name">Accent</span>
+        <span class="hex" data-color-name="accent"></span>
+      </div>
+      <div class="color-swatch surface">
+        <span class="name">Surface</span>
+        <span class="hex" data-color-name="surface"></span>
+      </div>
+      <div class="color-swatch text">
+        <span class="name">Text</span>
+        <span class="hex" data-color-name="text"></span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const root = document.documentElement;
+    const themeColors = {};
+
+    // Apply theme colors
+    ['primary', 'secondary', 'accent', 'surface', 'text'].forEach(color => {
+      const value = params.get(color);
+      if (value) {
+        root.style.setProperty(`--${color}`, value);
+        themeColors[color] = value;
+      } else {
+        // Read from CSS variables if not in URL
+        themeColors[color] = getComputedStyle(root).getPropertyValue(`--${color}`).trim();
+      }
+    });
+
+    // Widget configuration
+    const config = {
+      showHex: params.get('showHex') !== 'false' // default to true
+    };
+
+    if (config.showHex) {
+      document.querySelectorAll('.hex').forEach(el => {
+        const colorName = el.dataset.colorName;
+        if (themeColors[colorName]) {
+          el.textContent = themeColors[colorName];
+        }
+      });
+    }
+  </script>
+</body>
+</html>
