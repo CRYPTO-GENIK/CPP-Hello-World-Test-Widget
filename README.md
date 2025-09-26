@@ -14,15 +14,13 @@ These files are intended to be hosted on a service like GitHub Pages to serve as
 
 To install these widgets on your Cyberpunk.Pizza homepage, use the "magic links" below.
 
-**Important:** Before using these links, you must replace `<YOUR-USERNAME>` and `<YOUR-REPO-NAME>` with your actual GitHub username and the name of this repository.
-
 ### Theme Test Widget
 
 This widget helps you test and visualize the theme colors.
 
 **Installation Link:**
 ```
-https://cyberpunk.pizza/?newWidget=https://<YOUR-USERNAME>.github.io/<YOUR-REPO-NAME>/index.html&showHex=bool:true
+https://cyberpunk.pizza/?newWidget=https://crypto-genik.github.io/CPP-Hello-World-Test-Widget/index.html&showHex=bool:true
 ```
 
 ### Weather Widget
@@ -31,11 +29,10 @@ A mock weather widget with several configuration options.
 
 **Installation Link:**
 ```
-https://cyberpunk.pizza/?newWidget=https://<YOUR-USERNAME>.github.io/<YOUR-REPO-NAME>/weather.htm&zipCode=number:90210&units=select:imperial,metric&showForecast=bool:true
+https://cyberpunk.pizza/?newWidget=https://crypto-genik.github.io/CPP-Hello-World-Test-Widget/weather.htm&zipCode=number:90210&units=select:imperial,metric&showForecast=bool:true
 ```
 
 ## How to Use
 
 1.  Host these files using GitHub Pages or another static hosting service.
-2.  Replace the placeholders in the installation links above with your hosting URL.
-3.  Paste the complete installation link into your Cyberpunk.Pizza homepage to add the widget.
+2.  Paste one of the complete installation links above into your Cyberpunk.Pizza homepage to add the corresponding widget.
