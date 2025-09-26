@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather Widget</title>
+  <style>
+    :root {
+      /* Fallback colors */
+      --primary: #6366f1;
+      --secondary: #8b5cf6;
+      --accent: #f59e0b;
+      --surface: #1e293b;
+      --text: #f1f5f9;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: transparent;
+      color: var(--text);
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .weather-container {
+      background: var(--surface);
+      padding: 24px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+    .current-weather {
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      margin-bottom: 24px;
+    }
+    .current-temp {
+      font-size: 3rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .current-details {
+      text-align: left;
+    }
+    .location {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .condition {
+      font-size: 1rem;
+      opacity: 0.8;
+    }
+    .forecast {
+      display: none; /* Hidden by default */
+      grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    .forecast-day {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .day-name {
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+    .day-temp {
+      color: var(--accent);
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <div class="weather-container">
+    <div class="current-weather">
+      <div class="current-temp" id="currentTemp"></div>
+      <div class="current-details">
+        <div class="location" id="location"></div>
+        <div class="condition" id="condition"></div>
+      </div>
+    </div>
+    <div class="forecast" id="forecast">
+      <!-- Forecast will be injected here -->
+    </div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const root = document.documentElement;
+
+    // Apply theme colors
+    ['primary', 'secondary', 'accent', 'surface', 'text'].forEach(color => {
+      const value = params.get(color);
+      if (value) {
+        root.style.setProperty(`--${color}`, value);
+      }
+    });
+
+    // Widget configuration
+    const config = {
+      zipCode: params.get('zipCode') || '90210',
+      units: params.get('units') || 'imperial',
+      showForecast: params.get('showForecast') === 'true'
+    };
+
+    // Mock data based on config
+    const weatherData = {
+      '90210': { imperial: { temp: 72, unit: '°F', condition: 'Sunny', forecast: [68, 70, 75, 73] }, metric: { temp: 22, unit: '°C', condition: 'Sunny', forecast: [20, 21, 24, 23] } },
+      '10001': { imperial: { temp: 65, unit: '°F', condition: 'Cloudy', forecast: [62, 60, 68, 66] }, metric: { temp: 18, unit: '°C', condition: 'Cloudy', forecast: [17, 16, 20, 19] } },
+      'default': { imperial: { temp: 68, unit: '°F', condition: 'Partly Cloudy', forecast: [65, 67, 72, 70] }, metric: { temp: 20, unit: '°C', condition: 'Partly Cloudy', forecast: [18, 19, 22, 21] } }
+    };
+
+    const data = weatherData[config.zipCode] || weatherData['default'];
+    const displayData = data[config.units];
+
+    // Update UI
+    document.getElementById('currentTemp').textContent = `${displayData.temp}${displayData.unit}`;
+    document.getElementById('location').textContent = `Zip: ${config.zipCode}`;
+    document.getElementById('condition').textContent = displayData.condition;
+
+    if (config.showForecast) {
+      const forecastEl = document.getElementById('forecast');
+      forecastEl.style.display = 'grid';
+      const days = ['Mon', 'Tue', 'Wed', 'Thu'];
+      let forecastHTML = '';
+      for (let i = 0; i < 4; i++) {
+        forecastHTML += `
+          <div class="forecast-day">
+            <span class="day-name">${days[i]}</span>
+            <span class="day-temp">${displayData.forecast[i]}${displayData.unit}</span>
+          </div>
+        `;
+      }
+      forecastEl.innerHTML = forecastHTML;
+    }
+  </script>
+</body>
+</html>
