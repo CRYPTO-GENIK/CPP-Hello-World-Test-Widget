@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quick Notes Widget</title>
+  <style>
+    :root {
+      /* Fallback colors */
+      --primary: #6366f1;
+      --secondary: #8b5cf6;
+      --accent: #f59e0b;
+      --surface: #1e293b;
+      --text: #f1f5f9;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      background: transparent;
+      color: var(--text);
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 16px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .notes-container {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      min-height: 200px;
+    }
+    
+    .notes-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .notes-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .note-icon {
+      width: 20px;
+      height: 20px;
+    }
+    
+    .notes-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .action-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .action-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--primary);
+    }
+    
+    .action-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    
+    .notes-textarea {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      padding: 12px;
+      border-radius: 8px;
+      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      resize: none;
+      outline: none;
+      transition: all 0.2s;
+    }
+    
+    .notes-textarea:focus {
+      border-color: var(--primary);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .notes-textarea.markdown {
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    
+    .notes-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.75rem;
+      opacity: 0.6;
+    }
+    
+    .char-count {
+      color: var(--accent);
+    }
+    
+    .save-indicator {
+      color: var(--secondary);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    
+    .save-indicator.show {
+      opacity: 1;
+    }
+    
+    /* Markdown preview styles */
+    .preview-mode {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 12px;
+      border-radius: 8px;
+      overflow-y: auto;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    
+    .preview-mode h1, .preview-mode h2, .preview-mode h3 {
+      color: var(--primary);
+      margin-top: 1em;
+      margin-bottom: 0.5em;
+    }
+    
+    .preview-mode h1 { font-size: 1.5rem; }
+    .preview-mode h2 { font-size: 1.3rem; }
+    .preview-mode h3 { font-size: 1.1rem; }
+    
+    .preview-mode p {
+      margin-bottom: 1em;
+    }
+    
+    .preview-mode code {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'SF Mono', 'Monaco', monospace;
+      font-size: 0.85em;
+      color: var(--accent);
+    }
+    
+    .preview-mode pre {
+      background: rgba(0, 0, 0, 0.2);
+      padding: 12px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 1em 0;
+    }
+    
+    .preview-mode ul, .preview-mode ol {
+      margin-left: 1.5em;
+      margin-bottom: 1em;
+    }
+    
+    .preview-mode a {
+      color: var(--primary);
+      text-decoration: underline;
+    }
+    
+    .preview-mode blockquote {
+      border-left: 3px solid var(--primary);
+      padding-left: 1em;
+      margin: 1em 0;
+      opacity: 0.8;
+    }
+    
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="notes-container">
+    <div class="notes-header">
+      <div class="notes-title">
+        <svg class="note-icon" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
+        </svg>
+        Quick Notes
+      </div>
+      <div class="notes-actions">
+        <button class="action-btn" id="clearBtn" title="Clear all notes">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"/>
+          </svg>
+          Clear
+        </button>
+        <button class="action-btn" id="markdownBtn" title="Toggle markdown mode">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M14.85 3L16.3 4.45l-2.85 2.85 2.85 2.85L14.85 11.6 12 8.75 14.85 3m-5 0L12.7 8.75 9.85 11.6 8.4 10.15l2.85-2.85L8.4 4.45 9.85 3M3 15v3h3.95l8-8L11.95 7l-8 8m18 .6L19.6 17l-1.7-1.7-1.4 1.4L18.2 18.4 16.5 20.1 17.9 21.5l1.7-1.7 1.7 1.7 1.4-1.4-1.7-1.7 1.7-1.7L21 15.6z"/>
+          </svg>
+          MD
+        </button>
+        <button class="action-btn" id="previewBtn" title="Preview markdown">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+            <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    
+    <textarea 
+      class="notes-textarea" 
+      id="notesArea"
+      placeholder="Start typing your notes here...
+      
+💡 Tips:
+• Your notes auto-save as you type
+• Toggle markdown mode for formatting
+• Use preview to see rendered markdown
+• Notes persist across sessions"
+      spellcheck="true"
+    ></textarea>
+    
+    <div class="preview-mode hidden" id="previewArea"></div>
+    
+    <div class="notes-footer">
+      <span class="char-count" id="charCount">0 characters</span>
+      <span class="save-indicator" id="saveIndicator">✓ Saved</span>
+      <span class="last-saved" id="lastSaved">Never saved</span>
+    </div>
+  </div>
+
+  <script>
+    // Parse theme from URL parameters
+    const params = new URLSearchParams(window.location.search);
+    const root = document.documentElement;
+    
+    // Apply theme colors
+    ['primary', 'secondary', 'accent', 'surface', 'text'].forEach(color => {
+      const value = params.get(color);
+      if (value) {
+        root.style.setProperty(`--${color}`, value);
+      }
+    });
+    
+    // Widget configuration from URL params
+    const config = {
+      markdown: params.get('markdown') === 'true',
+      autosave: params.get('autosave') !== 'false',
+      placeholder: params.get('placeholder') || ''
+    };
+    
+    // Elements
+    const notesArea = document.getElementById('notesArea');
+    const previewArea = document.getElementById('previewArea');
+    const charCount = document.getElementById('charCount');
+    const saveIndicator = document.getElementById('saveIndicator');
+    const lastSaved = document.getElementById('lastSaved');
+    const clearBtn = document.getElementById('clearBtn');
+    const markdownBtn = document.getElementById('markdownBtn');
+    const previewBtn = document.getElementById('previewBtn');
+    
+    // State
+    let widgetData = {
+      content: '',
+      markdown: config.markdown,
+      lastSaved: null
+    };
+    
+    let saveTimeout;
+    let isPreviewMode = false;
+    
+    // Load data on startup
+    function loadData() {
+      window.parent.postMessage({
+        type: 'STORAGE_GET'
+      }, '*');
+    }
+    
+    // Save data
+    function saveData() {
+      widgetData.content = notesArea.value;
+      widgetData.lastSaved = Date.now();
+      
+      window.parent.postMessage({
+        type: 'STORAGE_SET',
+        value: JSON.stringify(widgetData)
+      }, '*');
+      
+      // Show save indicator
+      saveIndicator.classList.add('show');
+      updateLastSaved();
+      
+      setTimeout(() => {
+        saveIndicator.classList.remove('show');
+      }, 2000);
+    }
+    
+    // Auto-save with debouncing
+    function autoSave() {
+      if (!config.autosave) return;
+      
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => {
+        saveData();
+      }, 1000);
+    }
+    
+    // Update character count
+    function updateCharCount() {
+      const count = notesArea.value.length;
+      charCount.textContent = `${count} character${count !== 1 ? 's' : ''}`;
+    }
+    
+    // Update last saved time
+    function updateLastSaved() {
+      if (!widgetData.lastSaved) {
+        lastSaved.textContent = 'Never saved';
+        return;
+      }
+      
+      const now = Date.now();
+      const diff = now - widgetData.lastSaved;
+      const seconds = Math.floor(diff / 1000);
+      const minutes = Math.floor(seconds / 60);
+      const hours = Math.floor(minutes / 60);
+      
+      if (seconds < 60) {
+        lastSaved.textContent = 'Just saved';
+      } else if (minutes < 60) {
+        lastSaved.textContent = `Saved ${minutes} min ago`;
+      } else if (hours < 24) {
+        lastSaved.textContent = `Saved ${hours} hr ago`;
+      } else {
+        const date = new Date(widgetData.lastSaved);
+        lastSaved.textContent = `Saved ${date.toLocaleDateString()}`;
+      }
+    }
+    
+    // Simple markdown parser
+    function parseMarkdown(text) {
+      // Escape HTML
+      text = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      
+      // Headers
+      text = text.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+      text = text.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+      text = text.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+      
+      // Bold
+      text = text.replace(/\*\*(.*)\*\*/g, '<strong>$1</strong>');
+      
+      // Italic
+      text = text.replace(/\*(.*)\*/g, '<em>$1</em>');
+      
+      // Links
+      text = text.replace(/\[([^\]]+)\]\(([^\)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+      
+      // Inline code
+      text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+      
+      // Code blocks
+      text = text.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+      
+      // Lists
+      text = text.replace(/^\* (.+)$/gim, '<li>$1</li>');
+      text = text.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+      
+      // Blockquotes
+      text = text.replace(/^> (.+)$/gim, '<blockquote>$1</blockquote>');
+      
+      // Line breaks
+      text = text.replace(/\n\n/g, '</p><p>');
+      text = '<p>' + text + '</p>';
+      
+      return text;
+    }
+    
+    // Toggle markdown mode
+    function toggleMarkdown() {
+      widgetData.markdown = !widgetData.markdown;
+      markdownBtn.classList.toggle('active', widgetData.markdown);
+      notesArea.classList.toggle('markdown', widgetData.markdown);
+      saveData();
+    }
+    
+    // Toggle preview mode
+    function togglePreview() {
+      isPreviewMode = !isPreviewMode;
+      previewBtn.classList.toggle('active', isPreviewMode);
+      
+      if (isPreviewMode) {
+        notesArea.classList.add('hidden');
+        previewArea.classList.remove('hidden');
+        previewArea.innerHTML = parseMarkdown(notesArea.value);
+      } else {
+        notesArea.classList.remove('hidden');
+        previewArea.classList.add('hidden');
+      }
+    }
+    
+    // Clear notes
+    function clearNotes() {
+      if (notesArea.value && !confirm('Clear all notes? This cannot be undone.')) {
+        return;
+      }
+      notesArea.value = '';
+      widgetData.content = '';
+      updateCharCount();
+      saveData();
+      if (isPreviewMode) {
+        togglePreview();
+      }
+    }
+    
+    // Event listeners
+    notesArea.addEventListener('input', () => {
+      updateCharCount();
+      autoSave();
+    });
+    
+    clearBtn.addEventListener('click', clearNotes);
+    markdownBtn.addEventListener('click', toggleMarkdown);
+    previewBtn.addEventListener('click', togglePreview);
+    
+    // Custom placeholder if provided
+    if (config.placeholder) {
+      notesArea.placeholder = config.placeholder;
+    }
+    
+    // Listen for storage responses and theme updates
+    window.addEventListener('message', (event) => {
+      if (event.data.type === 'STORAGE_RESPONSE') {
+        if (event.data.value) {
+          try {
+            widgetData = JSON.parse(event.data.value);
+            notesArea.value = widgetData.content || '';
+            markdownBtn.classList.toggle('active', widgetData.markdown);
+            notesArea.classList.toggle('markdown', widgetData.markdown);
+            updateCharCount();
+            updateLastSaved();
+          } catch (e) {
+            console.error('Failed to parse saved data:', e);
+          }
+        }
+      } else if (event.data.type === 'THEME_UPDATE') {
+        Object.entries(event.data.theme).forEach(([key, value]) => {
+          root.style.setProperty(`--${key}`, value);
+        });
+      }
+    });
+    
+    // Update last saved time periodically
+    setInterval(updateLastSaved, 60000);
+    
+    // Load data on init
+    loadData();
+  </script>
+</body>
+</html>
