@@ -32,7 +32,15 @@ A mock weather widget with several configuration options.
 https://cyberpunk.pizza/?newWidget=https://crypto-genik.github.io/CPP-Hello-World-Test-Widget/weather.htm&zipCode=number:90210&units=select:imperial,metric&showForecast=bool:true
 ```
 
+### Quicknotes Widget
+
+A quick notes widget with autosave and markdown functionality.
+
+**Installation Link:**
+```
+https://cyberpunk.pizza/?newWidget=https://crypto-genik.github.io/CPP-Hello-World-Test-Widget/notes.html&markdown=bool:false&autosave=bool:true&placeholder=text:Type your notes here...
+```
+
 ## How to Use
 
-1.  Host these files using GitHub Pages or another static hosting service.
-2.  Paste one of the complete installation links above into your Cyberpunk.Pizza homepage to add the corresponding widget.
+1.  Paste one of the complete installation links above into your Cyberpunk.Pizza homepage to add the corresponding widget.
