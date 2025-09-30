@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calendar Widget</title>
+  <style>
+    :root {
+      /* Fallback colors */
+      --primary: #6366f1;
+      --secondary: #8b5cf6;
+      --accent: #f59e0b;
+      --surface: #1e293b;
+      --text: #f1f5f9;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: transparent;
+      color: var(--text);
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+    .calendar-container {
+      width: 100%;
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .calendar-nav {
+      background: transparent;
+      border: none;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 1.5rem;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+    .calendar-nav:hover {
+      opacity: 1;
+      color: var(--primary);
+    }
+    .calendar-month-year {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--primary);
+    }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      text-align: center;
+    }
+    .calendar-day-name {
+      font-size: 0.75rem;
+      font-weight: 500;
+      opacity: 0.6;
+      padding-bottom: 8px;
+    }
+    .calendar-day {
+      font-size: 0.875rem;
+      padding: 4px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      aspect-ratio: 1 / 1;
+    }
+    .calendar-day.other-month {
+      opacity: 0.3;
+    }
+    .calendar-day:not(.other-month):hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    .calendar-day.is-today {
+      background-color: var(--primary);
+      color: white;
+      font-weight: 700;
+    }
+    .calendar-day.is-weekend:not(.is-today) {
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <div class="calendar-container">
+    <div class="calendar-header">
+      <button class="calendar-nav" id="prevMonthBtn">&lt;</button>
+      <div class="calendar-month-year" id="monthYear"></div>
+      <button class="calendar-nav" id="nextMonthBtn">&gt;</button>
+    </div>
+    <div class="calendar-grid" id="calendarGrid">
+      <!-- Day names will be injected here -->
+    </div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const root = document.documentElement;
+
+    // Apply theme colors
+    ['primary', 'secondary', 'accent', 'surface', 'text'].forEach(color => {
+      const value = params.get(color);
+      if (value) {
+        root.style.setProperty(`--${color}`, value);
+      }
+    });
+
+    // Widget configuration
+    const config = {
+      startOfWeek: params.get('startOfWeek') || 'sunday', // 'sunday' or 'monday'
+      highlightWeekends: params.get('highlightWeekends') !== 'false' // default to true
+    };
+
+    const monthYearEl = document.getElementById('monthYear');
+    const calendarGridEl = document.getElementById('calendarGrid');
+    const prevMonthBtn = document.getElementById('prevMonthBtn');
+    const nextMonthBtn = document.getElementById('nextMonthBtn');
+
+    let currentDate = new Date();
+
+    function renderCalendar() {
+      calendarGridEl.innerHTML = '';
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+
+      monthYearEl.textContent = `${currentDate.toLocaleString('default', { month: 'long' })} ${year}`;
+
+      const firstDayOfMonth = new Date(year, month, 1);
+      const lastDayOfMonth = new Date(year, month + 1, 0);
+      const daysInMonth = lastDayOfMonth.getDate();
+
+      const dayNames = (config.startOfWeek === 'monday')
+        ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+        : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+      dayNames.forEach(day => {
+        const dayNameEl = document.createElement('div');
+        dayNameEl.className = 'calendar-day-name';
+        dayNameEl.textContent = day;
+        calendarGridEl.appendChild(dayNameEl);
+      });
+
+      let startingDay = firstDayOfMonth.getDay(); // 0 for Sunday, 1 for Monday...
+      if (config.startOfWeek === 'monday') {
+        startingDay = (startingDay === 0) ? 6 : startingDay - 1;
+      }
+
+      // Add empty cells for days before the first of the month
+      for (let i = 0; i < startingDay; i++) {
+        const emptyCell = document.createElement('div');
+        calendarGridEl.appendChild(emptyCell);
+      }
+
+      const today = new Date();
+      for (let i = 1; i <= daysInMonth; i++) {
+        const dayEl = document.createElement('div');
+        dayEl.className = 'calendar-day';
+        dayEl.textContent = i;
+
+        const currentDayDate = new Date(year, month, i);
+        const dayOfWeek = currentDayDate.getDay();
+
+        if (year === today.getFullYear() && month === today.getMonth() && i === today.getDate()) {
+          dayEl.classList.add('is-today');
+        }
+
+        if (config.highlightWeekends && (dayOfWeek === 0 || dayOfWeek === 6)) {
+          dayEl.classList.add('is-weekend');
+        }
+
+        calendarGridEl.appendChild(dayEl);
+      }
+    }
+
+    prevMonthBtn.addEventListener('click', () => {
+      currentDate.setMonth(currentDate.getMonth() - 1);
+      renderCalendar();
+    });
+
+    nextMonthBtn.addEventListener('click', () => {
+      currentDate.setMonth(currentDate.getMonth() + 1);
+      renderCalendar();
+    });
+
+    // Initial render
+    renderCalendar();
+  </script>
+</body>
+</html>
