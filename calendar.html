@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quote of the Day Widget</title>
+  <title>Calendar Widget</title>
   <style>
     :root {
       /* Fallback colors */
@@ -27,35 +27,88 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      text-align: center;
       width: 100%;
-      height: 100vh;
     }
-    .quote-container {
+    .calendar-container {
+      width: 100%;
+      background: var(--surface);
+      border-radius: 12px;
       padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
-    .quote-text {
-      font-size: 1.2rem;
-      font-style: italic;
-      color: var(--primary);
-      margin-bottom: 12px;
-      line-height: 1.5;
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
     }
-    .quote-author {
-      font-size: 0.9rem;
-      font-weight: 600;
+    .calendar-nav {
+      background: transparent;
+      border: none;
       color: var(--text);
-      opacity: 0.8;
+      cursor: pointer;
+      font-size: 1.5rem;
+      opacity: 0.7;
+      transition: opacity 0.2s;
     }
-    .quote-author::before {
-      content: "— ";
+    .calendar-nav:hover {
+      opacity: 1;
+      color: var(--primary);
+    }
+    .calendar-month-year {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--primary);
+    }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      text-align: center;
+    }
+    .calendar-day-name {
+      font-size: 0.75rem;
+      font-weight: 500;
+      opacity: 0.6;
+      padding-bottom: 8px;
+    }
+    .calendar-day {
+      font-size: 0.875rem;
+      padding: 4px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      aspect-ratio: 1 / 1;
+    }
+    .calendar-day.other-month {
+      opacity: 0.3;
+    }
+    .calendar-day:not(.other-month):hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    .calendar-day.is-today {
+      background-color: var(--primary);
+      color: white;
+      font-weight: 700;
+    }
+    .calendar-day.is-weekend:not(.is-today) {
+      color: var(--accent);
     }
   </style>
 </head>
 <body>
-  <div class="quote-container">
-    <p class="quote-text" id="quoteText"></p>
-    <p class="quote-author" id="quoteAuthor"></p>
+  <div class="calendar-container">
+    <div class="calendar-header">
+      <button class="calendar-nav" id="prevMonthBtn">&lt;</button>
+      <div class="calendar-month-year" id="monthYear"></div>
+      <button class="calendar-nav" id="nextMonthBtn">&gt;</button>
+    </div>
+    <div class="calendar-grid" id="calendarGrid">
+      <!-- Day names will be injected here -->
+    </div>
   </div>
 
   <script>
@@ -72,37 +125,83 @@
 
     // Widget configuration
     const config = {
-      category: params.get('category') || 'inspirational' // 'inspirational', 'tech', 'funny'
+      startOfWeek: params.get('startOfWeek') || 'sunday', // 'sunday' or 'monday'
+      highlightWeekends: params.get('highlightWeekends') !== 'false' // default to true
     };
 
-    const quotes = {
-      inspirational: [
-        { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
-        { text: "Believe you can and you're halfway there.", author: "Theodore Roosevelt" },
-        { text: "Strive not to be a success, but rather to be of value.", author: "Albert Einstein" }
-      ],
-      tech: [
-        { text: "Talk is cheap. Show me the code.", author: "Linus Torvalds" },
-        { text: "The computer was born to solve problems that did not exist before.", author: "Bill Gates" },
-        { text: "Any sufficiently advanced technology is indistinguishable from magic.", author: "Arthur C. Clarke" }
-      ],
-      funny: [
-        { text: "I'm not superstitious, but I am a little stitious.", author: "Michael Scott" },
-        { text: "Before you criticize someone, you should walk a mile in their shoes. That way, when you criticize them, you're a mile away and you have their shoes.", author: "Jack Handey" },
-        { text: "I love deadlines. I love the whooshing noise they make as they go by.", author: "Douglas Adams" }
-      ]
-    };
+    const monthYearEl = document.getElementById('monthYear');
+    const calendarGridEl = document.getElementById('calendarGrid');
+    const prevMonthBtn = document.getElementById('prevMonthBtn');
+    const nextMonthBtn = document.getElementById('nextMonthBtn');
 
-    function displayQuote() {
-      const quoteList = quotes[config.category] || quotes.inspirational;
-      const randomIndex = Math.floor(Math.random() * quoteList.length);
-      const randomQuote = quoteList[randomIndex];
+    let currentDate = new Date();
 
-      document.getElementById('quoteText').textContent = `"${randomQuote.text}"`;
-      document.getElementById('quoteAuthor').textContent = randomQuote.author;
+    function renderCalendar() {
+      calendarGridEl.innerHTML = '';
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+
+      monthYearEl.textContent = `${currentDate.toLocaleString('default', { month: 'long' })} ${year}`;
+
+      const firstDayOfMonth = new Date(year, month, 1);
+      const lastDayOfMonth = new Date(year, month + 1, 0);
+      const daysInMonth = lastDayOfMonth.getDate();
+
+      const dayNames = (config.startOfWeek === 'monday')
+        ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+        : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+      dayNames.forEach(day => {
+        const dayNameEl = document.createElement('div');
+        dayNameEl.className = 'calendar-day-name';
+        dayNameEl.textContent = day;
+        calendarGridEl.appendChild(dayNameEl);
+      });
+
+      let startingDay = firstDayOfMonth.getDay(); // 0 for Sunday, 1 for Monday...
+      if (config.startOfWeek === 'monday') {
+        startingDay = (startingDay === 0) ? 6 : startingDay - 1;
+      }
+
+      // Add empty cells for days before the first of the month
+      for (let i = 0; i < startingDay; i++) {
+        const emptyCell = document.createElement('div');
+        calendarGridEl.appendChild(emptyCell);
+      }
+
+      const today = new Date();
+      for (let i = 1; i <= daysInMonth; i++) {
+        const dayEl = document.createElement('div');
+        dayEl.className = 'calendar-day';
+        dayEl.textContent = i;
+
+        const currentDayDate = new Date(year, month, i);
+        const dayOfWeek = currentDayDate.getDay();
+
+        if (year === today.getFullYear() && month === today.getMonth() && i === today.getDate()) {
+          dayEl.classList.add('is-today');
+        }
+
+        if (config.highlightWeekends && (dayOfWeek === 0 || dayOfWeek === 6)) {
+          dayEl.classList.add('is-weekend');
+        }
+
+        calendarGridEl.appendChild(dayEl);
+      }
     }
 
-    displayQuote();
+    prevMonthBtn.addEventListener('click', () => {
+      currentDate.setMonth(currentDate.getMonth() - 1);
+      renderCalendar();
+    });
+
+    nextMonthBtn.addEventListener('click', () => {
+      currentDate.setMonth(currentDate.getMonth() + 1);
+      renderCalendar();
+    });
+
+    // Initial render
+    renderCalendar();
   </script>
 </body>
 </html>
