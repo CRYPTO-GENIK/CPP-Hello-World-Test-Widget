@@ -11,8 +11,8 @@ Here is a list of the available widgets in this repository.
 *   **Theme Test (`index.html`)**: A simple utility to visualize theme colors.
 *   **Weather (`weather.htm`)**: A mock weather widget with configuration options.
 *   **Quick Notes (`notes.html`)**: A persistent notes widget with markdown support.
-*   **Calendar (`calendar.html`)**: A monthly calendar with theme and configuration options.
-*   **Clock (`clock.html`)**: A digital/analog clock that is themeable and configurable.
+*   **Calculator (`calculator.html`)**: A themeable, standard calculator for basic arithmetic.
+*   **Quote of the Day (`quote.html`)**: Shows a random quote from a configurable category.
 
 ---
 
@@ -41,16 +41,16 @@ A quick notes widget with autosave and markdown functionality.
 https://cyberpunk.pizza/?newWidget=https://crypto-genik.github.io/CPP-Hello-World-Test-Widget/notes.html&markdown=bool:false&autosave=bool:true&placeholder=text:Type your notes here...
 ```
 
-### Calendar Widget
-A monthly calendar that can be themed and configured.
+### Calculator Widget
+A standard calculator for basic arithmetic.
 **Installation Link:**
 ```
-https://cyberpunk.pizza/?newWidget=https://crypto-genik.github.io/CPP-Hello-World-Test-Widget/calendar.html&startOfWeek=select:sunday,monday&highlightWeekends=bool:true
+https://cyberpunk.pizza/?newWidget=https://crypto-genik.github.io/CPP-Hello-World-Test-Widget/calculator.html
 ```
 
-### Clock Widget
-A themeable clock with analog and digital faces.
+### Quote of the Day Widget
+Displays a random quote from a selected category.
 **Installation Link:**
 ```
-https://cyberpunk.pizza/?newWidget=https://crypto-genik.github.io/CPP-Hello-World-Test-Widget/clock.html&style=select:digital,analog&showSeconds=bool:true&hourFormat=select:12,24
+https://cyberpunk.pizza/?newWidget=https://crypto-genik.github.io/CPP-Hello-World-Test-Widget/quote.html&category=select:inspirational,tech,funny
 ```

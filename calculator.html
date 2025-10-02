@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculator Widget</title>
+  <style>
+    :root {
+      /* Fallback colors */
+      --primary: #6366f1;
+      --secondary: #8b5cf6;
+      --accent: #f59e0b;
+      --surface: #1e293b;
+      --text: #f1f5f9;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: transparent;
+      color: var(--text);
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 16px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .calculator-container {
+      width: 100%;
+      max-width: 280px;
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .calculator-display {
+      width: 100%;
+      background: rgba(0,0,0,0.2);
+      color: var(--text);
+      font-size: 2.5rem;
+      text-align: right;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+    .calculator-keys {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .calc-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text);
+      font-size: 1.2rem;
+      font-weight: 500;
+      padding: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .calc-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--primary);
+    }
+    .calc-btn:active {
+      transform: scale(0.95);
+    }
+    .calc-btn.operator {
+      background-color: var(--accent);
+      color: #000;
+    }
+    .calc-btn.function {
+      background-color: var(--secondary);
+      color: white;
+    }
+    .calc-btn.zero {
+      grid-column: span 2;
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator-container">
+    <div class="calculator-display" id="display">0</div>
+    <div class="calculator-keys">
+      <button class="calc-btn function" data-action="clear">AC</button>
+      <button class="calc-btn function" data-action="sign">+/-</button>
+      <button class="calc-btn function" data-action="percent">%</button>
+      <button class="calc-btn operator" data-action="divide">÷</button>
+
+      <button class="calc-btn" data-action="append">7</button>
+      <button class="calc-btn" data-action="append">8</button>
+      <button class="calc-btn" data-action="append">9</button>
+      <button class="calc-btn operator" data-action="multiply">×</button>
+
+      <button class="calc-btn" data-action="append">4</button>
+      <button class="calc-btn" data-action="append">5</button>
+      <button class="calc-btn" data-action="append">6</button>
+      <button class="calc-btn operator" data-action="subtract">−</button>
+
+      <button class="calc-btn" data-action="append">1</button>
+      <button class="calc-btn" data-action="append">2</button>
+      <button class="calc-btn" data-action="append">3</button>
+      <button class="calc-btn operator" data-action="add">+</button>
+
+      <button class="calc-btn zero" data-action="append">0</button>
+      <button class="calc-btn" data-action="decimal">.</button>
+      <button class="calc-btn operator" data-action="calculate">=</button>
+    </div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const root = document.documentElement;
+
+    // Apply theme colors
+    ['primary', 'secondary', 'accent', 'surface', 'text'].forEach(color => {
+      const value = params.get(color);
+      if (value) {
+        root.style.setProperty(`--${color}`, value);
+      }
+    });
+
+    const display = document.getElementById('display');
+    const keys = document.querySelector('.calculator-keys');
+    let displayValue = '0';
+    let firstOperand = null;
+    let operator = null;
+    let waitingForSecondOperand = false;
+
+    function updateDisplay() {
+      display.textContent = displayValue;
+    }
+
+    keys.addEventListener('click', (event) => {
+      const { target } = event;
+      if (!target.matches('button')) return;
+
+      const action = target.dataset.action;
+      const keyContent = target.textContent;
+
+      if (action === 'append') {
+        if (waitingForSecondOperand) {
+          displayValue = keyContent;
+          waitingForSecondOperand = false;
+        } else {
+          displayValue = displayValue === '0' ? keyContent : displayValue + keyContent;
+        }
+      } else if (action === 'decimal') {
+        if (!displayValue.includes('.')) {
+          displayValue += '.';
+        }
+      } else if (['add', 'subtract', 'multiply', 'divide'].includes(action)) {
+        if (operator && !waitingForSecondOperand) {
+            calculate();
+        }
+        firstOperand = parseFloat(displayValue);
+        operator = action;
+        waitingForSecondOperand = true;
+      } else if (action === 'calculate') {
+        calculate();
+      } else if (action === 'clear') {
+        displayValue = '0';
+        firstOperand = null;
+        operator = null;
+        waitingForSecondOperand = false;
+      } else if (action === 'sign') {
+        displayValue = (parseFloat(displayValue) * -1).toString();
+      } else if (action === 'percent') {
+        displayValue = (parseFloat(displayValue) / 100).toString();
+      }
+
+      updateDisplay();
+    });
+
+    function calculate() {
+        if (operator === null || waitingForSecondOperand) return;
+        const secondOperand = parseFloat(displayValue);
+        let result = 0;
+        switch (operator) {
+            case 'add': result = firstOperand + secondOperand; break;
+            case 'subtract': result = firstOperand - secondOperand; break;
+            case 'multiply': result = firstOperand * secondOperand; break;
+            case 'divide': result = firstOperand / secondOperand; break;
+        }
+        displayValue = String(result);
+        firstOperand = result;
+        operator = null;
+        waitingForSecondOperand = false;
+    }
+
+    updateDisplay();
+  </script>
+</body>
+</html>
