@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quote of the Day Widget</title>
+  <style>
+    :root {
+      /* Fallback colors */
+      --primary: #6366f1;
+      --secondary: #8b5cf6;
+      --accent: #f59e0b;
+      --surface: #1e293b;
+      --text: #f1f5f9;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: transparent;
+      color: var(--text);
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      width: 100%;
+      height: 100vh;
+    }
+    .quote-container {
+      padding: 16px;
+    }
+    .quote-text {
+      font-size: 1.2rem;
+      font-style: italic;
+      color: var(--primary);
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+    .quote-author {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+      opacity: 0.8;
+    }
+    .quote-author::before {
+      content: "— ";
+    }
+  </style>
+</head>
+<body>
+  <div class="quote-container">
+    <p class="quote-text" id="quoteText"></p>
+    <p class="quote-author" id="quoteAuthor"></p>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const root = document.documentElement;
+
+    // Apply theme colors
+    ['primary', 'secondary', 'accent', 'surface', 'text'].forEach(color => {
+      const value = params.get(color);
+      if (value) {
+        root.style.setProperty(`--${color}`, value);
+      }
+    });
+
+    // Widget configuration
+    const config = {
+      category: params.get('category') || 'inspirational' // 'inspirational', 'tech', 'funny'
+    };
+
+    const quotes = {
+      inspirational: [
+        { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
+        { text: "Believe you can and you're halfway there.", author: "Theodore Roosevelt" },
+        { text: "Strive not to be a success, but rather to be of value.", author: "Albert Einstein" }
+      ],
+      tech: [
+        { text: "Talk is cheap. Show me the code.", author: "Linus Torvalds" },
+        { text: "The computer was born to solve problems that did not exist before.", author: "Bill Gates" },
+        { text: "Any sufficiently advanced technology is indistinguishable from magic.", author: "Arthur C. Clarke" }
+      ],
+      funny: [
+        { text: "I'm not superstitious, but I am a little stitious.", author: "Michael Scott" },
+        { text: "Before you criticize someone, you should walk a mile in their shoes. That way, when you criticize them, you're a mile away and you have their shoes.", author: "Jack Handey" },
+        { text: "I love deadlines. I love the whooshing noise they make as they go by.", author: "Douglas Adams" }
+      ]
+    };
+
+    function displayQuote() {
+      const quoteList = quotes[config.category] || quotes.inspirational;
+      const randomIndex = Math.floor(Math.random() * quoteList.length);
+      const randomQuote = quoteList[randomIndex];
+
+      document.getElementById('quoteText').textContent = `"${randomQuote.text}"`;
+      document.getElementById('quoteAuthor').textContent = randomQuote.author;
+    }
+
+    displayQuote();
+  </script>
+</body>
+</html>
