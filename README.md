@@ -4,43 +4,53 @@ This repository contains two example widgets for the Cyberpunk.Pizza homepage ap
 
 These files are intended to be hosted on a service like GitHub Pages to serve as live widgets.
 
-## Widgets
+## Available Widgets
 
-1.  **`index.html` - Theme Test Widget**: A simple utility widget to visualize the five theme colors (primary, secondary, accent, surface, text) sent by the homepage. It includes a configuration option to show or hide the hex color codes.
+Here is a list of the available widgets in this repository.
 
-2.  **`weather.htm` - Mock Weather Widget**: A more complex example demonstrating various configuration types. It includes settings for a zip code, temperature units, and a forecast toggle. The weather data is static but changes based on the provided settings.
+*   **Theme Test (`index.html`)**: A simple utility to visualize theme colors.
+*   **Weather (`weather.htm`)**: A mock weather widget with configuration options.
+*   **Quick Notes (`notes.html`)**: A persistent notes widget with markdown support.
+*   **Calendar (`calendar.html`)**: A monthly calendar with theme and configuration options.
+*   **Clock (`clock.html`)**: A digital/analog clock that is themeable and configurable.
 
-## Installation
+---
 
-To install these widgets on your Cyberpunk.Pizza homepage, use the "magic links" below.
+## Widget Details & Installation Links
+
+To install these widgets on your Cyberpunk.Pizza homepage, use the example "magic links" below.
 
 ### Theme Test Widget
-
-This widget helps you test and visualize the theme colors.
-
+A simple utility widget to visualize the five theme colors.
 **Installation Link:**
 ```
 https://cyberpunk.pizza/?newWidget=https://crypto-genik.github.io/CPP-Hello-World-Test-Widget/index.html&showHex=bool:true
 ```
 
 ### Weather Widget
-
 A mock weather widget with several configuration options.
-
 **Installation Link:**
 ```
 https://cyberpunk.pizza/?newWidget=https://crypto-genik.github.io/CPP-Hello-World-Test-Widget/weather.htm&zipCode=number:90210&units=select:imperial,metric&showForecast=bool:true
 ```
 
-### Quicknotes Widget
-
+### Quick Notes Widget
 A quick notes widget with autosave and markdown functionality.
-
 **Installation Link:**
 ```
 https://cyberpunk.pizza/?newWidget=https://crypto-genik.github.io/CPP-Hello-World-Test-Widget/notes.html&markdown=bool:false&autosave=bool:true&placeholder=text:Type your notes here...
 ```
 
-## How to Use
+### Calendar Widget
+A monthly calendar that can be themed and configured.
+**Installation Link:**
+```
+https://cyberpunk.pizza/?newWidget=https://crypto-genik.github.io/CPP-Hello-World-Test-Widget/calendar.html&startOfWeek=select:sunday,monday&highlightWeekends=bool:true
+```
 
-1.  Paste one of the complete installation links above into your Cyberpunk.Pizza homepage to add the corresponding widget.
+### Clock Widget
+A themeable clock with analog and digital faces.
+**Installation Link:**
+```
+https://cyberpunk.pizza/?newWidget=https://crypto-genik.github.io/CPP-Hello-World-Test-Widget/clock.html&style=select:digital,analog&showSeconds=bool:true&hourFormat=select:12,24
+```
