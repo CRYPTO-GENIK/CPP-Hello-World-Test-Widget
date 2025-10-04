@@ -85,6 +85,7 @@
 
     /* Digital Clock Styles */
     .digital-clock {
+      font-family: var(--font-header, system-ui, sans-serif);
       font-size: 3rem;
       font-weight: 700;
       color: var(--primary);
@@ -107,13 +108,47 @@
     const params = new URLSearchParams(window.location.search);
     const root = document.documentElement;
 
-    // Apply theme colors
-    ['primary', 'secondary', 'accent', 'surface', 'text'].forEach(color => {
+    // 1. Apply Theme Colors
+    const themeColors = ['primary', 'secondary', 'accent', 'surface', 'text'];
+    themeColors.forEach(color => {
       const value = params.get(color);
       if (value) {
         root.style.setProperty(`--${color}`, value);
       }
     });
+
+    // 2. Load and Apply Fonts
+    const fontHeader = params.get('fontHeader');
+    const fontSubheader = params.get('fontSubheader');
+    const fontBody = params.get('fontBody');
+
+    // Create a Google Fonts URL from the font families provided
+    const fontsToLoad = [fontHeader, fontSubheader, fontBody]
+      .filter(Boolean) // Remove null/undefined entries
+      .filter((font, index, self) => self.indexOf(font) === index); // Get unique fonts
+
+    if (fontsToLoad.length > 0) {
+      const fontUrl = `https://fonts.googleapis.com/css2?family=${fontsToLoad.map(f => f.replace(/ /g, '+')).join('&family=')}&display=swap`;
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = fontUrl;
+      document.head.appendChild(link);
+    }
+
+    // 3. Set CSS Custom Properties for Fonts
+    const style = document.createElement('style');
+    style.innerHTML = `
+      :root {
+        --font-header: "${fontHeader || 'system-ui, sans-serif'}";
+        --font-subheader: "${fontSubheader || 'system-ui, sans-serif'}";
+        --font-body: "${fontBody || 'system-ui, sans-serif'}";
+      }
+
+      h1, h2, h3, .font-header { font-family: var(--font-header); }
+      h4, h5, h6, .font-subheader { font-family: var(--font-subheader); }
+      body, p, div, span, a { font-family: var(--font-body); }
+    `;
+    document.head.appendChild(style);
 
     // Widget configuration
     const config = {
