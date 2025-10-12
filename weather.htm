@@ -29,15 +29,57 @@
       justify-content: center;
       width: 100%;
     }
-    .weather-container {
-      /* background: var(--surface); */ /* Removed for transparency */
-      padding: 0; /* Adjusted for responsiveness */
+    .widget-container {
+      --widget-bg: rgba(30, 41, 59, 0.5); /* default glassy background */
+      --widget-blur: 10px;
+      --widget-opacity: 1;
+
+      background: var(--widget-bg);
+      backdrop-filter: blur(var(--widget-blur));
+      opacity: var(--widget-opacity);
+      padding: 16px;
       border-radius: 16px;
-      /* border: 1px solid rgba(255, 255, 255, 0.1); */ /* Removed for cleaner look */
+      border: 1px solid rgba(255, 255, 255, 0.1);
       width: 100%;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
       text-align: center;
     }
+    .widget-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .widget-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--primary);
+    }
+    .widget-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .action-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text);
+      padding: 6px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+    }
+    .action-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--primary);
+    }
     .current-weather {
+      flex: 1;
       display: flex;
       flex-wrap: wrap; /* Allow wrapping on small screens */
       align-items: center;
@@ -91,7 +133,22 @@
   </style>
 </head>
 <body>
-  <div class="weather-container">
+  <div class="widget-container">
+    <div class="widget-header">
+      <div class="widget-title">Weather</div>
+      <div class="widget-actions">
+        <button class="action-btn" id="minimizeBtn" title="Minimize">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M15 9H5v2h10V9z"/>
+          </svg>
+        </button>
+        <button class="action-btn" id="maximizeBtn" title="Maximize">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M3 3h14v14H3V3zm2 2v10h10V5H5z" fill-rule="evenodd"/>
+          </svg>
+        </button>
+      </div>
+    </div>
     <div class="current-weather">
       <div class="current-temp" id="currentTemp"></div>
       <div class="current-details">
@@ -187,6 +244,26 @@
       }
       forecastEl.innerHTML = forecastHTML;
     }
+
+    // Listen for style updates from parent
+    window.addEventListener('message', (event) => {
+      if (event.data.type === 'STYLE_UPDATE') {
+        const { bg, blur, opacity } = event.data.style;
+        const widgetContainer = document.querySelector('.widget-container');
+        if (bg) widgetContainer.style.setProperty('--widget-bg', bg);
+        if (blur) widgetContainer.style.setProperty('--widget-blur', `${blur}px`);
+        if (opacity) widgetContainer.style.setProperty('--widget-opacity', opacity);
+      }
+    });
+
+    // Widget actions
+    document.getElementById('minimizeBtn').addEventListener('click', () => {
+      window.parent.postMessage({ type: 'WIDGET_STATE_CHANGE', state: 'minimized' }, '*');
+    });
+
+    document.getElementById('maximizeBtn').addEventListener('click', () => {
+      window.parent.postMessage({ type: 'WIDGET_STATE_CHANGE', state: 'maximized' }, '*');
+    });
   </script>
 </body>
 </html>
